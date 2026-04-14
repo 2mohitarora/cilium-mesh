@@ -20,7 +20,9 @@ kubectl --context vcluster-docker_cluster-2 exec -n cilium ds/cilium -- cilium i
 cilium connectivity test --context vcluster-docker_cluster-1 --multi-cluster vcluster-docker_cluster-2 --test pod-to-pod,pod-to-service --namespace cilium
 
 # Clean up test resources
-kubectl --context vcluster-docker_cluster-1 delete ns cilium-test-1
+kubectl --context vcluster-docker_cluster-1 delete ns cilium-test-1 
+kubectl --context vcluster-docker_cluster-1 delete ns cilium-test-ccnp1
+kubectl --context vcluster-docker_cluster-1 delete ns cilium-test-ccnp2
 kubectl --context vcluster-docker_cluster-2 delete ns cilium-test-1
 ```
 
