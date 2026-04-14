@@ -1,18 +1,31 @@
+# Max packet size on the wire
 mtu: 1450
 
+# Replace kube-proxy with Cilium's kube-proxy replacement. Cilium takes over all Service load balancing (ClusterIP, NodePort, LoadBalancer) using eBPF programs directly in the kernel — no iptables rules needed.
 kubeProxyReplacement: true
+
+# Tells Cilium to encapsulate pod-to-pod traffic between nodes rather than using native/direct routing.
 routingMode: tunnel
+
+# Specifies the encapsulation protocol to use for pod-to-pod traffic. VXLAN is a lightweight tunneling protocol that is used to encapsulate network traffic between pods (the alternative is Geneve). VXLAN wraps each packet in an extra UDP+VXLAN header, which adds ~50 bytes of overhead — that's why mtu: 1450 is set to 1500 (standard Ethernet) minus 50.
 tunnelProtocol: vxlan
 
+# Cilium operator manages a pool of CIDRs and carves out a per-node block automatically. This is the simplest mode — no cloud provider integration needed. Each node gets its own slice of the pod CIDR to hand out IPs from.
 ipam:
   mode: cluster-pool
 
+# Enable Gateway API Support
 gatewayAPI:
   enabled: true
 envoy:
   enabled: true
   role: daemonset
 
+# In standard Cilium, each pod gets a CiliumEndpoint (CEP) — a 1:1 mapping. In large clusters (thousands of pods), this creates a huge number of individual objects that the API server and Cilium agents have to watch and sync, which becomes a bottleneck.
+
+# CiliumEndpointSlice (CES) solves this by batching multiple CiliumEndpoints into a single object, similar to how Kubernetes' own EndpointSlice batches Endpoints. So instead of 1,000 individual CEP objects, you might have ~10 CES objects each containing ~100 endpoints.
+
+# Key things it carries for each endpoint inside the slice: the endpoint's identity (security identity assigned by Cilium), its IP addresses, networking state, and the node it's running on. The Cilium operator is responsible for grouping endpoints into slices and keeping them updated.
 ciliumEndpointSlice:
   enabled: true
 
