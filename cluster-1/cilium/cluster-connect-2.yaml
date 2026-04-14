@@ -1,9 +1,14 @@
+# Only matters if you're running Cilium ClusterMesh, which connects multiple Kubernetes clusters together. Each cluster needs a unique name and a unique numeric ID (1–255). The ID gets embedded into the security identity of every pod, so Cilium can tell "this packet came from cluster-1" vs "cluster-2" when enforcing cross-cluster network policies. If you're running a single cluster, these values are still required in the config but don't have a functional effect.
 cluster:
   name: cluster-1
   id: 1
+
+# This is the actual pool of IPs that Cilium carves up for pods. We are also using ipam.mode: cluster-pool, so Cilium operator takes this /16 (65,534 usable IPs) and slices it into smaller per-node blocks (by default /24 chunks, giving 254 pods per node). When a new node joins, the operator assigns it the next available /24 from this range.
 ipam:
   operator:
     clusterPoolIPv4PodCIDRList: 10.1.0.0/16
+
+# List of remote clusters that this cluster should connect to. Each entry describes one peer
 clustermesh:
   config:
     clusters:
