@@ -4,7 +4,8 @@ mtu: 1450
 # Replace kube-proxy with Cilium's kube-proxy replacement. Cilium takes over all Service load balancing (ClusterIP, NodePort, LoadBalancer) using eBPF programs directly in the kernel — no iptables rules needed.
 kubeProxyReplacement: true
 
-# Tells Cilium to encapsulate pod-to-pod traffic between nodes rather than using native/direct routing.
+# Tells Cilium to encapsulate pod-to-pod traffic between nodes rather than using native/direct routing. Without tunnel mode, Cilium needs the underlying network to know how to route pod CIDR traffic between nodes.
+# With tunnel mode, Cilium doesn't need anything. It wraps pod traffic in VXLAN (or Geneve) packets between nodes, using the node IPs as the outer source/destination. Since nodes can already reach each other on their node network, the pod traffic just rides inside that. The underlying network never sees pod IPs at all.
 routingMode: tunnel
 
 # Specifies the encapsulation protocol to use for pod-to-pod traffic. VXLAN is a lightweight tunneling protocol that is used to encapsulate network traffic between pods (the alternative is Geneve). VXLAN wraps each packet in an extra UDP+VXLAN header, which adds ~50 bytes of overhead — that's why mtu: 1450 is set to 1500 (standard Ethernet) minus 50.
