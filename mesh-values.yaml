@@ -1,31 +1,38 @@
 # Cluster Mesh & KVStoreMesh (The Scaling Engine)
 clustermesh:
+  # Deploys a dedicated ClusterMesh API server in this cluster. This is the component that exposes the cluster's state (endpoints, identities, services) to remote clusters. It's backed by an etcd instance. Without this, there's no ClusterMesh.
   useAPIServer: true
+  # Upper limit on how many clusters can join the mesh
   maxConnectedClusters: 255
+  # TTL for the cache of remote cluster information
   cacheTTL: "15m"
   config:
     enabled: true
+  # Activates the ClusterMesh configuration. This is what tells Cilium to actually attempt connecting to the remote clusters listed in config.clusters
   apiserver:
     service:
-      type: LoadBalancer # Ensures reachability across VPCs/Regions
+      type: LoadBalancer # exposes the ClusterMesh API server via a LoadBalancer, ClusterIP wouldn't be routable
     tls:
       auto:
         enabled: true
-        method: certmanager # Best for 2026/2027 automated rotation
+        method: certmanager # Best for automated rotation
         certManagerIssuerRef:
           group: cert-manager.io
           kind: ClusterIssuer
-          name: cilium-ca-issuer # Matches the name in the YAML above
+          name: cilium-ca-issuer
+  # Important optimization. Without it, every Cilium agent on every node connects directly to remote clusters' etcd. With KVStoreMesh enabled, a single local component syncs remote state into the local cluster's etcd, and agents read from there. Reduces cross-cluster connections dramatically
   kvstoremesh:
     enabled: true
+  # Syncs CiliumEndpointSlices across clusters. This is how cluster-1 learns about pods in cluster-2 for cross-cluster service load balancing and policy enforcement.
   enableEndpointSliceSynchronization: true
-  # MCS-API: The "Push" model for global services
+  # MCS-API: The "Push" model for global services. Explicitly mark which services should be discoverable across clusters by creating ServiceExport resources. It gives you fine-grained control over what's shared.
   mcsapi:
     enabled: true
+    # When MCS-API is on, Cilium can automatically patch CoreDNS to resolve <svc>.<ns>.svc.clusterset.local for exported services.
     corednsAutoConfigure:
       enabled: false
 
- # Enable Hubble   
+# Enable Hubble
 
 hubble:
   # Hubble Server (embedded in cilium-agent)- This isn't a separate pod. It runs inside every cilium-agent on every node. It watches the eBPF datapath and captures flow events
@@ -35,7 +42,7 @@ hubble:
     enabled: true
   # A web application that connects to Hubble Relay's gRPC endpoint. It renders the service map (which services talk to which), shows real-time flows, displays policy verdicts (allowed/denied), and visualizes drop reasons.
   # A command-line tool that also connects to Relay's gRPC endpoint. Used for filtering and querying flows from the terminal.
-  ui:  
+  ui:
     enabled: true
     service:
       type: LoadBalancer
