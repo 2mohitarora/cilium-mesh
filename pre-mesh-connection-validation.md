@@ -22,6 +22,7 @@ kubectl --context vcluster-docker_cluster-1 exec -n cilium ds/cilium -- cilium s
 kubectl --context vcluster-docker_cluster-2 exec -n cilium ds/cilium -- cilium status --brief
 
 kubectl --context vcluster-docker_cluster-1 get cm cilium-config -n cilium -o yaml | grep -E "cluster-name|cluster-id|routing-mode|tunnel-protocol|kube-proxy-replacement|max-connected-clusters|clustermesh-enable-mcs-api"
+
 kubectl --context vcluster-docker_cluster-2 get cm cilium-config -n cilium -o yaml | grep -E "cluster-name|cluster-id|routing-mode|tunnel-protocol|kube-proxy-replacement|max-connected-clusters|clustermesh-enable-mcs-api"
 
 cilium clustermesh status --context vcluster-docker_cluster-1 -n cilium --wait
