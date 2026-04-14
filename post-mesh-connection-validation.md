@@ -84,7 +84,11 @@ kubectl --context vcluster-docker_cluster-2 run curl-test --rm -it --image=curli
 ```
 
 ### MCS-API Validator, Scearion 3 : CiliumNetworkPolicy and L7 Policy and CiliumClusterwideNetworkPolicy 
- CiliumNetworkPolicy (CNP) and CiliumClusterwideNetworkPolicy (CCNP) are not automatically replicated across clusters in a Cilium Cluster Mesh. Cluster Mesh synchronizes identities, pods, and services to allow cross-cluster communication, security policies must be managed separately in each cluster
+CiliumNetworkPolicy (CNP) is Cilium's custom resource for defining network security rules. It's more powerful than the standard Kubernetes NetworkPolicy because it operates at both L3/L4 (IP/port) and L7 (HTTP, gRPC, Kafka, DNS).
+
+CiliumNetworkPolicy (CNP) and CiliumClusterwideNetworkPolicy (CCNP) are not automatically replicated across clusters in a Cilium Cluster Mesh. Cluster Mesh synchronizes identities, pods, and services to allow cross-cluster communication, security policies must be managed separately in each cluster
+
+With ClusterMesh — since you have cluster-1 and cluster-2 peered, CNPs can reference pods in remote clusters. The cluster.id ensures the identities are globally unique, so a policy in cluster-1 saying "allow from app: frontend" will match frontends in both clusters.
 
 ### Deny all remote cluster traffic (CiliumClusterwideNetworkPolicy)
 ```
