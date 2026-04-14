@@ -1,0 +1,28 @@
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: deny-all-remote-cluster-2
+spec:
+  endpointSelector:
+    matchExpressions:
+        - key: k8s:io.kubernetes.pod.namespace
+          operator: NotIn
+          values:
+            - kube-system
+            - cilium
+            - cilium-secrets
+            - dapr-system
+            - kube-node-lease
+            - kube-public
+            - cert-manager
+            - local-path-storage
+  ingress:
+    - fromEndpoints:
+        - matchExpressions:
+            - key: io.cilium.k8s.policy.cluster
+              operator: In
+              values:
+                - cluster-2
+    - fromEntities:
+        - health
+        - remote-node

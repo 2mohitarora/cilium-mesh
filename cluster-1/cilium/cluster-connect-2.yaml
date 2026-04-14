@@ -1,0 +1,14 @@
+cluster:
+  name: cluster-1
+  id: 1
+ipam:
+  operator:
+    clusterPoolIPv4PodCIDRList: 10.1.0.0/16
+clustermesh:
+  config:
+    clusters:
+      - name: cluster-2
+        address: cluster-2.mesh.cilium.io
+        port: 2379
+        ips:
+          - 192.168.107.254

@@ -1,0 +1,36 @@
+# 1. Create a self-signed source
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cilium-selfsigned-issuer
+spec:
+  selfSigned: {}
+
+---
+
+# 2. Create the CA Certificate that all clusters will trust
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cilium-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: cilium-ca
+  secretName: cilium-ca-secret
+  issuerRef:
+    name: cilium-selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+
+# 3. Create the actual ClusterIssuer that Cilium will use
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cilium-ca-issuer
+spec:
+  ca:
+    secretName: cilium-ca-secret
+---

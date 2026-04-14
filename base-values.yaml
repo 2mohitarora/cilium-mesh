@@ -1,0 +1,20 @@
+mtu: 1450
+
+kubeProxyReplacement: true
+routingMode: tunnel
+tunnelProtocol: vxlan
+
+ipam:
+  mode: cluster-pool
+
+gatewayAPI:
+  enabled: true
+envoy:
+  enabled: true
+  role: daemonset
+
+ciliumEndpointSlice:
+  enabled: true
+
+# Cilium's identity-relevant labels configuration. It controls which Kubernetes pod labels Cilium uses to compute security identities. By default, Cilium uses all pod labels to determine a pod's identity. This setting narrows it down to only few. If you have labels that change frequently or aren't relevant to network policy (like pod-template-hash, controller-revision-hash, etc.), they cause unnecessary identity churn — meaning Cilium constantly creates new identities, regenerates policy, and updates eBPF maps.
+labels: "k8s:app;k8s:role;k8s:team;k8s:env;k8s:io.kubernetes.pod.namespace;k8s:app.kubernetes.io/name;k8s:app.kubernetes.io/component;k8s:app.kubernetes.io/part-of"

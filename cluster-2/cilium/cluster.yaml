@@ -1,0 +1,6 @@
+cluster:
+  name: cluster-1
+  id: 1
+ipam:
+  operator:
+    clusterPoolIPv4PodCIDRList: 10.2.0.0/16

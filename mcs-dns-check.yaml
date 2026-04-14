@@ -1,0 +1,11 @@
+# mcs-dns-check.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dns-validator
+  namespace: default
+spec:
+  containers:
+  - name: alpine
+    image: alpine
+    command: ["sleep", "infinite"]

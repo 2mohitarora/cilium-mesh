@@ -1,0 +1,59 @@
+# Cluster Mesh & KVStoreMesh (The Scaling Engine)
+clustermesh:
+  useAPIServer: true
+  maxConnectedClusters: 255
+  cacheTTL: "15m"
+  config:
+    enabled: true
+  apiserver:
+    service:
+      type: LoadBalancer # Ensures reachability across VPCs/Regions
+    tls:
+      auto:
+        enabled: true
+        method: certmanager # Best for 2026/2027 automated rotation
+        certManagerIssuerRef:
+          group: cert-manager.io
+          kind: ClusterIssuer
+          name: cilium-ca-issuer # Matches the name in the YAML above
+  kvstoremesh:
+    enabled: true
+  enableEndpointSliceSynchronization: true
+  # MCS-API: The "Push" model for global services
+  mcsapi:
+    enabled: true
+    corednsAutoConfigure:
+      enabled: false
+
+ # Enable Hubble   
+
+hubble:
+  # Hubble Server (embedded in cilium-agent)- This isn't a separate pod. It runs inside every cilium-agent on every node. It watches the eBPF datapath and captures flow events
+  enabled: true
+  # A standalone deployment (typically 1 replica). It connects to every Hubble Server (every cilium-agent) across all nodes in the cluster via gRPC on port 4244. It aggregates the per-node flows into a single cluster-wide stream. It exposes its own gRPC endpoint on port 4245 for the UI and CLI to consume.
+  relay:
+    enabled: true
+  # A web application that connects to Hubble Relay's gRPC endpoint. It renders the service map (which services talk to which), shows real-time flows, displays policy verdicts (allowed/denied), and visualizes drop reasons.
+  # A command-line tool that also connects to Relay's gRPC endpoint. Used for filtering and querying flows from the terminal.
+  ui:  
+    enabled: true
+    service:
+      type: LoadBalancer
+  tls:
+    auto:
+      enabled: true
+      method: certmanager
+      certManagerIssuerRef:
+        group: cert-manager.io
+        kind: ClusterIssuer
+        name: cilium-ca-issuer
+  metrics:
+    enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - icmp
+      - http
+    dashboards:
+      enabled: true

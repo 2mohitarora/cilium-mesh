@@ -1,0 +1,12 @@
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: only-allow-prod-to-prod
+spec:
+  endpointSelector:
+    matchLabels:
+      environment: production
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            environment: production

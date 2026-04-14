@@ -1,0 +1,24 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: web-headless-ingress
+  namespace: mcs-test
+spec:
+  endpointSelector: {}
+    #matchLabels:
+    #  app: web-headless
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            # app: curl-test
+            io.cilium.k8s.policy.cluster: cluster-2
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: "/"
+              - method: GET
+                path: "/healthz"
