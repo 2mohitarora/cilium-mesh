@@ -26,8 +26,8 @@ kubectl --context vcluster-docker_cluster-2 delete ns cilium-test-1
 
 ### Create dns-validator pod on both clusters
 ```
-kubectl --context vcluster-docker_cluster-1 apply -f mcs-dns-check.yaml
-kubectl --context vcluster-docker_cluster-2 apply -f mcs-dns-check.yaml
+kubectl --context vcluster-docker_cluster-1 apply -f dns-validator.yaml
+kubectl --context vcluster-docker_cluster-2 apply -f dns-validator.yaml
 ```
 ### MCS-API Validator, Scearion 1 : Service only on cluster-2
 ```
@@ -79,6 +79,8 @@ kubectl --context vcluster-docker_cluster-2 rollout restart deployment cilium-op
 kubectl --context vcluster-docker_cluster-2 exec dns-validator -- nslookup web-headless.mcs-test.svc.clusterset.local
 
 kubectl --context vcluster-docker_cluster-2 run curl-test --rm -it --image=curlimages/curl --restart=Never -n mcs-test --labels="app=curl-test" -- curl -v -s --max-time 5 http://web-headless.mcs-test.svc.clusterset.local -o /dev/null -w "Response from: %{remote_ip}\n"
+
+# The pod IPs returned by DNS are remote pod IPs, but the actual packets still travel node-to-node through the VXLAN tunnel. The client pod never talks directly to the remote pod over some magic path.
 ```
 
 ### MCS-API Validator, Scearion 3 : CiliumNetworkPolicy and L7 Policy and CiliumClusterwideNetworkPolicy 
