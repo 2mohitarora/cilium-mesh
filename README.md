@@ -93,4 +93,3 @@ docker exec vcluster.node.cluster-1.worker-1 journalctl -u kubelet --no-pager
 
 # Networking
 - Each cluster uses a separate Docker network (vind-cluster-1 and vind-cluster-2) to keep them isolated from each other.
-- LoadBalancer is enabled for both clusters
