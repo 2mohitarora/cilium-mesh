@@ -101,15 +101,16 @@ kubectl --context vcluster-docker_cluster-1 get ccnp
 kubectl --context vcluster-docker_cluster-2 get ccnp
 
 # Try connecting from cluster-1 to cluster-2 and cluster-2 to cluster-1, it will fail
+kubectl --context vcluster-docker_cluster-1 run curl-test --rm -it --image=curlimages/curl --restart=Never -n mcs-test --labels="app=curl-test" -- curl -v -s --max-time 5 http://web.mcs-test.svc.clusterset.local -o /dev/null -w "Response from: %{remote_ip}\n"
 ```
 
-### Allow cluster-1 to access web (CiliumNetworkPolicy)
+### Allow cluster-1 to access web (CiliumNetworkPolicy) and run the test again
 ```
 kubectl --context vcluster-docker_cluster-2 apply -f policies/allow-web.yaml
 kubectl --context vcluster-docker_cluster-2 get cnp -n mcs-test
 ```
 
-### Allow cluster-2 to access web-headless (CiliumNetworkPolicy)
+### Test headless from cluster-2, it will fail, Allow cluster-2 to access web-headless (CiliumNetworkPolicy) and then test again
 ```
 kubectl --context vcluster-docker_cluster-1 apply -f policies/allow-web-headless.yaml
 kubectl --context vcluster-docker_cluster-1 get cnp -n mcs-test
