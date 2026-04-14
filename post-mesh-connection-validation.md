@@ -195,3 +195,70 @@ hubble observe --follow --output json | jq -c 'select(.flow.verdict == "DROPPED"
 kubectl --context vcluster-docker_cluster-1 exec -n cilium ds/cilium -- cilium identity get 169568
 kubectl --context vcluster-docker_cluster-2 exec -n cilium ds/cilium -- cilium identity get 169568
 ```
+
+### ServiceExport and ServiceImport flow
+
+Cluster-2                                          Cluster-1
+─────────                                          ─────────
+
+1. User creates ServiceExport
+        │
+        ▼
+2. cilium-operator watches it
+        │
+        ▼
+3. operator writes service export
+   info into local ClusterMesh etcd
+        │
+        ▼
+4. ClusterMesh etcd stores it at
+   cilium/state/serviceexports/v1/
+        │
+        │
+        ├──── KVStoreMesh in cluster-1 has a
+        │     read-only connection to cluster-2's
+        │     ClusterMesh etcd
+        │
+        ▼
+5. KVStoreMesh in cluster-1 detects
+   the new key, pulls it, caches it
+   into cluster-1's local etcd
+        │
+        ▼
+6. cilium-operator in cluster-1 watches
+   local etcd for remote service exports
+        │
+        ▼
+7. operator creates ServiceImport
+   in cluster-1's Kubernetes API
+        │
+        ▼
+8. operator creates derived-$hash
+   Service in cluster-1
+        │
+        ▼
+9. CoreDNS sees the ServiceImport
+   via multicluster plugin
+        │
+        ▼
+10. web.mcs-test.svc.clusterset.local
+    is now resolvable in cluster-1
+
+# CiliumAgent
+
+cilium-agent
+    │
+    ├──→ Kubernetes API (for local cluster data)
+    │    - Local pods, services, endpoints
+    │    - Local CiliumIdentity CRDs
+    │    - Local CiliumNetworkPolicy
+    │    - Local CiliumEndpointSlice
+    │
+    ├──→ Local ClusterMesh etcd (for remote cluster data)
+    │    - Remote identities
+    │    - Remote nodes
+    │    - Remote services
+    │    - Remote endpoints
+    │
+    ✗ Never talks to remote ClusterMesh etcd directly
+      (KVStoreMesh does that on its behalf)
