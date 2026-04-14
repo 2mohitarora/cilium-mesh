@@ -22,11 +22,17 @@ envoy:
   enabled: true
   role: daemonset
 
-# In standard Cilium, each pod gets a CiliumEndpoint (CEP) — a 1:1 mapping. In large clusters (thousands of pods), this creates a huge number of individual objects that the API server and Cilium agents have to watch and sync, which becomes a bottleneck.
+# In standard Cilium, each pod gets a CiliumEndpoint (CEP) — a 1:1 mapping. In large clusters (thousands of pods), this creates a huge number of individual objects that other Cilium agents and consumers have to watch and sync, which becomes a bottleneck.
 
 # CiliumEndpointSlice (CES) solves this by batching multiple CiliumEndpoints into a single object, similar to how Kubernetes' own EndpointSlice batches Endpoints. So instead of 1,000 individual CEP objects, you might have ~10 CES objects each containing ~100 endpoints.
 
 # Key things it carries for each endpoint inside the slice: the endpoint's identity (security identity assigned by Cilium), its IP addresses, networking state, and the node it's running on. The Cilium operator is responsible for grouping endpoints into slices and keeping them updated.
+
+# CiliumEndpoint (CEP) — created by the Cilium agent on each node. The agent watches pods scheduled on its node, assigns them networking (IP, identity), and writes a CEP object to the Kubernetes API server. So agent → API server → etcd.
+
+# CiliumEndpointSlice (CES) — created by the Cilium operator, not the agent. The operator watches all the individual CEP objects across the cluster, batches them into CES objects, and writes those back to the API server.
+
+# Agents (and other consumers like KVStoreMesh) can now watch the smaller set of CES objects instead of thousands of individual CEPs
 ciliumEndpointSlice:
   enabled: true
 
