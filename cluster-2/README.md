@@ -21,10 +21,7 @@ kubectl set image deployment/coredns \
   -n kube-system \
   coredns=registry.k8s.io/coredns/coredns:v1.14.2
 ```
-# Install Gateway API CRD
-```
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/experimental-install.yaml
-```
+
 # Install cilium 
 ```
 helm install cilium cilium/cilium --version 1.19.1 \
@@ -89,36 +86,6 @@ kubectl edit clusterrole system:coredns
   - watch
 ```
 
-# Check Gateway Class and Create Cilium Gateway
-```
-kubectl get gatewayclasses -o wide
-kubectl apply -f ../cilium-gateway.yaml
-kubectl get gateways -n cilium
-kubectl get svc -l io.cilium.gateway/owning-gateway=default-gateway -n cilium
-```
-
-# Install Dapr Inject Dapr sidecar into Traefik deployment
-```
-dapr init -k
-
-dapr status -k
-
-# Make sure Dapr containers are ready
-kubectl get pods -o wide -n dapr-system
-
-# Run DAPR UI
-
-dapr dashboard -k
-
-```
-# Configure Registry for second cluster
-```
-# Start a local registry on the same Docker network as your vind cluster
-docker run -d --name registry-2 --network vind-cluster-2 -p 5051:5000 registry:2
-
-# Configure registry for cluster-2 so that nodes can pull from insecure registry
-./cluster-2-script.sh
-```
 # Disconnect from first cluster
 ```
 vcluster disconnect

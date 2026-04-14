@@ -1,17 +1,11 @@
 # Install Tools
 ```
-brew install kubectl helm docker go ko dapr/tap/dapr-cli cilium-cli vcluster hubble k9s
+brew install kubectl helm docker vcluster k9s
 ```
 
 # Install Orbstack
 ```
 brew install --cask orbstack
-
-# Add local registries that will be created later
-# Add registry to docker daemon in ~/.docker/daemon.json
-{
-  "insecure-registries": ["localhost:5050", "localhost:5051"]
-}
 
 # Start Orbstack
 ```
