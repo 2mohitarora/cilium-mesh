@@ -16,4 +16,4 @@ clustermesh:
         address: cluster-1.mesh.cilium.io
         port: 2379
         ips:
-          - 192.168.97.254
+          - 192.168.107.254
